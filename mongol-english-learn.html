@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🇲🇳 Mongolian–English Learning App</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #ffffff;
+      --bg2: #f5f5f0;
+      --bg3: #ececec;
+      --text: #1a1a1a;
+      --text2: #555;
+      --text3: #888;
+      --border: rgba(0,0,0,0.12);
+      --border2: rgba(0,0,0,0.22);
+      --green: #1D9E75;
+      --green-light: #E1F5EE;
+      --green-dark: #085041;
+      --green-mid: #9FE1CB;
+      --red: #E24B4A;
+      --red-light: #FCEBEB;
+      --red-dark: #791F1F;
+      --amber-light: #FAEEDA;
+      --amber-dark: #633806;
+      --radius-md: 8px;
+      --radius-lg: 12px;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --bg: #1e1e1e;
+        --bg2: #2a2a2a;
+        --bg3: #333;
+        --text: #f0f0f0;
+        --text2: #aaa;
+        --text3: #777;
+        --border: rgba(255,255,255,0.1);
+        --border2: rgba(255,255,255,0.2);
+        --green-light: #0a3d2e;
+        --green-dark: #9FE1CB;
+        --red-light: #3d1010;
+        --red-dark: #F09595;
+        --amber-light: #3d2a00;
+        --amber-dark: #FAC775;
+      }
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg2);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .app {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 0 0 80px;
+      background: var(--bg);
+      min-height: 100vh;
+      position: relative;
+    }
+
+    /* ── Header ── */
+    .header {
+      text-align: center;
+      padding: 24px 20px 16px;
+      border-bottom: 0.5px solid var(--border);
+    }
+    .header h1 { font-size: 22px; font-weight: 600; }
+    .header p { font-size: 14px; color: var(--text2); margin-top: 4px; }
+    .streak-row {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .streak-badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--amber-light); color: var(--amber-dark);
+      font-size: 13px; font-weight: 500;
+      padding: 4px 12px; border-radius: 20px;
+    }
+    .xp-section { padding: 0 20px; margin-top: 10px; }
+    .xp-bar-wrap {
+      background: var(--bg3); border-radius: 20px; height: 8px; overflow: hidden;
+    }
+    .xp-bar {
+      height: 100%; background: var(--green); border-radius: 20px;
+      transition: width 0.5s ease;
+    }
+    .xp-label { font-size: 12px; color: var(--text3); text-align: right; margin-top: 4px; }
+
+    /* ── Bottom Nav ── */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0; left: 50%;
+      transform: translateX(-50%);
+      width: 100%; max-width: 600px;
+      display: flex;
+      background: var(--bg);
+      border-top: 0.5px solid var(--border);
+      z-index: 100;
+    }
+    .nav-btn {
+      flex: 1; padding: 12px 4px 10px;
+      text-align: center; cursor: pointer;
+      color: var(--text3); font-size: 11px;
+      border: none; background: none;
+      transition: color 0.15s;
+      display: flex; flex-direction: column; align-items: center; gap: 3px;
+    }
+    .nav-btn i { font-size: 22px; }
+    .nav-btn.active { color: var(--green); }
+
+    /* ── Screens ── */
+    .screen { display: none; padding: 20px; }
+    .screen.active { display: block; }
+
+    /* ── Lessons ── */
+    .section-title {
+      font-size: 13px; font-weight: 500;
+      color: var(--text2); margin-bottom: 12px;
+      text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .lesson-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+    }
+    .lesson-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px 12px;
+      cursor: pointer; text-align: center;
+      transition: all 0.15s;
+      position: relative;
+    }
+    .lesson-card:hover:not(.locked) { border-color: var(--green); transform: translateY(-1px); }
+    .lesson-card.locked { opacity: 0.45; cursor: not-allowed; }
+    .lesson-card.done { border-color: var(--green); }
+    .lesson-icon { font-size: 32px; margin-bottom: 8px; }
+    .lesson-title { font-size: 14px; font-weight: 600; }
+    .lesson-sub { font-size: 12px; color: var(--text2); margin-top: 3px; }
+    .badge {
+      display: inline-block;
+      font-size: 11px; padding: 3px 10px;
+      border-radius: 12px; margin-top: 8px;
+    }
+    .badge-green { background: #EAF3DE; color: #27500A; }
+    .badge-gray { background: var(--bg3); color: var(--text3); }
+
+    /* ── Quiz ── */
+    .quiz-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+    .quiz-top {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 12px;
+    }
+    .quiz-progress { font-size: 13px; color: var(--text2); }
+    .quiz-hearts { font-size: 15px; letter-spacing: 2px; }
+    .prog-bar-wrap {
+      background: var(--bg3); border-radius: 20px; height: 6px; overflow: hidden; margin-bottom: 20px;
+    }
+    .prog-bar {
+      height: 100%; background: var(--green); border-radius: 20px;
+      transition: width 0.4s ease;
+    }
+    .q-type {
+      font-size: 12px; color: var(--text3);
+      background: var(--bg2); display: inline-block;
+      padding: 3px 10px; border-radius: 12px; margin-bottom: 10px;
+    }
+    .q-text {
+      font-size: 20px; font-weight: 600; line-height: 1.4;
+      margin-bottom: 20px; color: var(--text);
+    }
+    .options {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 10px;
+    }
+    .opt-btn {
+      padding: 14px 10px;
+      border: 1.5px solid var(--border2);
+      border-radius: var(--radius-md);
+      background: var(--bg);
+      cursor: pointer; font-size: 14px;
+      color: var(--text); text-align: center;
+      line-height: 1.4; transition: all 0.15s;
+    }
+    .opt-btn:hover { border-color: var(--green); background: var(--green-light); }
+    .opt-btn.correct { border-color: var(--green); background: var(--green-light); color: var(--green-dark); }
+    .opt-btn.wrong { border-color: var(--red); background: var(--red-light); color: var(--red-dark); }
+    .opt-btn.disabled { pointer-events: none; }
+    .feedback-box {
+      margin-top: 14px; padding: 12px 16px;
+      border-radius: var(--radius-md); font-size: 14px; font-weight: 500;
+      display: none;
+    }
+    .feedback-box.correct { background: var(--green-light); color: var(--green-dark); display: block; }
+    .feedback-box.wrong { background: var(--red-light); color: var(--red-dark); display: block; }
+    .next-btn {
+      margin-top: 14px; width: 100%;
+      padding: 13px; background: var(--green);
+      color: white; border: none;
+      border-radius: var(--radius-md);
+      font-size: 15px; font-weight: 500;
+      cursor: pointer; display: none;
+      transition: opacity 0.15s;
+    }
+    .next-btn:hover { opacity: 0.9; }
+    .next-btn.show { display: block; }
+
+    /* ── Result ── */
+    .result-wrap {
+      text-align: center; padding: 40px 20px;
+    }
+    .result-emoji { font-size: 56px; margin-bottom: 12px; }
+    .result-title { font-size: 24px; font-weight: 600; margin-bottom: 6px; }
+    .result-sub { font-size: 15px; color: var(--text2); margin-bottom: 24px; }
+    .result-stats {
+      display: flex; justify-content: center; gap: 28px; margin-bottom: 28px;
+    }
+    .stat-box { text-align: center; }
+    .stat-num { font-size: 26px; font-weight: 600; color: var(--green); }
+    .stat-label { font-size: 12px; color: var(--text3); margin-top: 2px; }
+    .replay-btn {
+      background: var(--green); color: white; border: none;
+      padding: 14px 36px; border-radius: var(--radius-md);
+      font-size: 15px; font-weight: 500; cursor: pointer;
+    }
+
+    /* ── Phrases ── */
+    .search-wrap { margin-bottom: 14px; position: relative; }
+    .search-wrap i {
+      position: absolute; left: 12px; top: 50%;
+      transform: translateY(-50%); color: var(--text3); font-size: 18px;
+    }
+    .search-input {
+      width: 100%; padding: 10px 12px 10px 38px;
+      border: 0.5px solid var(--border2);
+      border-radius: var(--radius-md);
+      background: var(--bg); color: var(--text);
+      font-size: 14px; outline: none;
+    }
+    .search-input:focus { border-color: var(--green); }
+    .phrase-list { display: flex; flex-direction: column; gap: 10px; }
+    .phrase-card {
+      background: var(--bg);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .phrase-flags { font-size: 20px; flex-shrink: 0; }
+    .phrase-body { flex: 1; min-width: 0; }
+    .phrase-en { font-size: 15px; font-weight: 600; }
+    .phrase-mn { font-size: 14px; color: var(--text2); margin-top: 2px; }
+    .phrase-pron { font-size: 12px; color: var(--green); margin-top: 3px; font-style: italic; }
+    .speak-btn {
+      width: 38px; height: 38px; border-radius: 50%;
+      background: var(--green-light); border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--green); font-size: 18px; flex-shrink: 0;
+      transition: background 0.15s;
+    }
+    .speak-btn:hover { background: var(--green-mid); }
+
+    /* ── Flashcards ── */
+    .flashcard-wrap { perspective: 800px; margin: 0 auto; max-width: 400px; }
+    .flashcard {
+      width: 100%; height: 220px;
+      position: relative; cursor: pointer;
+      transform-style: preserve-3d;
+      transition: transform 0.5s ease;
+    }
+    .flashcard.flipped { transform: rotateY(180deg); }
+    .card-face {
+      position: absolute; width: 100%; height: 100%;
+      border: 1.5px solid var(--border2);
+      border-radius: var(--radius-lg);
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      backface-visibility: hidden;
+      padding: 24px;
+    }
+    .card-front { background: var(--bg); }
+    .card-back {
+      background: var(--green-light);
+      transform: rotateY(180deg);
+    }
+    .card-lang { font-size: 12px; color: var(--text3); margin-bottom: 10px; }
+    .card-word { font-size: 24px; font-weight: 600; text-align: center; }
+    .card-sub { font-size: 14px; color: var(--text2); margin-top: 8px; text-align: center; }
+    .card-hint { font-size: 12px; color: var(--text3); margin-top: 16px; }
+    .fc-nav { display: flex; gap: 10px; margin-top: 16px; justify-content: center; }
+    .fc-btn {
+      padding: 10px 24px; border: 0.5px solid var(--border2);
+      border-radius: var(--radius-md); background: var(--bg);
+      color: var(--text); cursor: pointer; font-size: 14px;
+      transition: all 0.15s;
+    }
+    .fc-btn:hover { border-color: var(--green); }
+    .fc-btn.primary { background: var(--green); color: white; border-color: var(--green); }
+    .fc-counter { text-align: center; font-size: 13px; color: var(--text3); margin-top: 10px; }
+    .fc-tip { text-align: center; font-size: 13px; color: var(--text2); margin-bottom: 14px; }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- Header -->
+  <div class="header">
+    <h1>🇲🇳 ↔ 🇺🇸 Learn English</h1>
+    <p>Монгол хэлнээс Англи хэл сур</p>
+    <div class="streak-row">
+      <div class="streak-badge"><i class="ti ti-flame"></i> 3 өдрийн streak!</div>
+    </div>
+    <div class="xp-section">
+      <div class="xp-bar-wrap">
+        <div class="xp-bar" id="xpBar" style="width:42%"></div>
+      </div>
+      <div class="xp-label" id="xpLabel">42 / 100 XP</div>
+    </div>
+  </div>
+
+  <!-- Screens -->
+
+  <!-- LESSONS -->
+  <div id="lessonsScreen" class="screen active">
+    <div class="section-title">Choose a lesson</div>
+    <div class="lesson-grid">
+      <div class="lesson-card done" onclick="goToQuiz()">
+        <div class="lesson-icon">👋</div>
+        <div class="lesson-title">Greetings</div>
+        <div class="lesson-sub">Мэндчилгээ</div>
+        <span class="badge badge-green">✓ Complete</span>
+      </div>
+      <div class="lesson-card done" onclick="goToQuiz()">
+        <div class="lesson-icon">🔢</div>
+        <div class="lesson-title">Numbers</div>
+        <div class="lesson-sub">Тоо</div>
+        <span class="badge badge-green">✓ Complete</span>
+      </div>
+      <div class="lesson-card" onclick="goToQuiz()">
+        <div class="lesson-icon">🎨</div>
+        <div class="lesson-title">Colors</div>
+        <div class="lesson-sub">Өнгө</div>
+        <span class="badge badge-gray">Start</span>
+      </div>
+      <div class="lesson-card" onclick="goToQuiz()">
+        <div class="lesson-icon">🍎</div>
+        <div class="lesson-title">Food</div>
+        <div class="lesson-sub">Хоол</div>
+        <span class="badge badge-gray">Start</span>
+      </div>
+      <div class="lesson-card locked">
+        <div class="lesson-icon">🏠</div>
+        <div class="lesson-title">Home</div>
+        <div class="lesson-sub">Гэр</div>
+        <span class="badge badge-gray">🔒 Locked</span>
+      </div>
+      <div class="lesson-card locked">
+        <div class="lesson-icon">✈️</div>
+        <div class="lesson-title">Travel</div>
+        <div class="lesson-sub">Аялал</div>
+        <span class="badge badge-gray">🔒 Locked</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quizScreen" class="screen">
+    <div id="quizActive">
+      <div class="quiz-card">
+        <div class="quiz-top">
+          <span class="quiz-progress" id="qProgress">1 / 7</span>
+          <span class="quiz-hearts" id="hearts">❤️❤️❤️</span>
+        </div>
+        <div class="prog-bar-wrap">
+          <div class="prog-bar" id="progBar" style="width:0%"></div>
+        </div>
+        <div class="q-type" id="qType">Монгол → English</div>
+        <div class="q-text" id="qText">Loading...</div>
+        <div class="options" id="options"></div>
+        <div class="feedback-box" id="feedback"></div>
+        <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Үргэлжлүүлэх →</button>
+      </div>
+    </div>
+    <div id="quizResult" class="result-wrap" style="display:none">
+      <div class="result-emoji" id="rEmoji">🎉</div>
+      <div class="result-title" id="rTitle">Маш сайн!</div>
+      <div class="result-sub" id="rSub">Amazing work today!</div>
+      <div class="result-stats">
+        <div class="stat-box"><div class="stat-num" id="rScore">0</div><div class="stat-label">Correct</div></div>
+        <div class="stat-box"><div class="stat-num" id="rXP">+0</div><div class="stat-label">XP earned</div></div>
+        <div class="stat-box"><div class="stat-num" id="rAcc">0%</div><div class="stat-label">Accuracy</div></div>
+      </div>
+      <button class="replay-btn" onclick="restartQuiz()">Дахин тоглох 🔄</button>
+    </div>
+  </div>
+
+  <!-- PHRASES -->
+  <div id="phrasesScreen" class="screen">
+    <div class="search-wrap">
+      <i class="ti ti-search"></i>
+      <input class="search-input" id="searchInput" type="text" placeholder="Search phrases..." oninput="filterPhrases()" />
+    </div>
+    <div class="phrase-list" id="phraseList"></div>
+  </div>
+
+  <!-- FLASHCARDS -->
+  <div id="flashcardsScreen" class="screen">
+    <div class="fc-tip">Tap the card to flip it!</div>
+    <div class="flashcard-wrap">
+      <div class="flashcard" id="flashcard" onclick="flipCard()">
+        <div class="card-face card-front">
+          <div class="card-lang">🇲🇳 Mongolian</div>
+          <div class="card-word" id="fcFront">Сайн байна уу?</div>
+          <div class="card-hint">Tap to reveal English</div>
+        </div>
+        <div class="card-face card-back">
+          <div class="card-lang">🇺🇸 English</div>
+          <div class="card-word" id="fcBack">How are you?</div>
+          <div class="card-sub" id="fcPron">Sain baina uu?</div>
+        </div>
+      </div>
+    </div>
+    <div class="fc-counter" id="fcCounter">1 / 10</div>
+    <div class="fc-nav">
+      <button class="fc-btn" onclick="prevCard()"><i class="ti ti-arrow-left"></i> Prev</button>
+      <button class="fc-btn primary" onclick="nextCard()">Next <i class="ti ti-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <!-- Bottom nav -->
+  <nav class="bottom-nav">
+    <button class="nav-btn active" id="nav-lessons" onclick="switchTab('lessons')">
+      <i class="ti ti-book"></i> Lessons
+    </button>
+    <button class="nav-btn" id="nav-quiz" onclick="switchTab('quiz')">
+      <i class="ti ti-bulb"></i> Quiz
+    </button>
+    <button class="nav-btn" id="nav-phrases" onclick="switchTab('phrases')">
+      <i class="ti ti-messages"></i> Phrases
+    </button>
+    <button class="nav-btn" id="nav-flashcards" onclick="switchTab('flashcards')">
+      <i class="ti ti-cards"></i> Flashcards
+    </button>
+  </nav>
+</div>
+
+<script>
+  /* ── Data ── */
+  const questions = [
+    { mn: "Сайн байна уу?", label: "🇲🇳 → 🇺🇸", options: ["How are you?", "Good morning!", "Thank you", "Goodbye"], correct: 0 },
+    { mn: "Баярлалаа", label: "🇲🇳 → 🇺🇸", options: ["Sorry", "Please", "Thank you", "Hello"], correct: 2 },
+    { mn: "What is your name?", label: "🇺🇸 → 🇲🇳", options: ["Та хаана байна?", "Таны нэр хэн бэ?", "Та хэдтэй вэ?", "Танд тусалж болох уу?"], correct: 1 },
+    { mn: "Уучлаарай", label: "🇲🇳 → 🇺🇸", options: ["Excuse me", "Good night", "See you", "Come here"], correct: 0 },
+    { mn: "I love you", label: "🇺🇸 → 🇲🇳", options: ["Би танд дуртай", "Чи хаана байна?", "Би өлссөн", "Чамд баярлалаа"], correct: 0 },
+    { mn: "Өглөөний мэнд", label: "🇲🇳 → 🇺🇸", options: ["Good evening", "Good afternoon", "Good morning", "Good night"], correct: 2 },
+    { mn: "How much does this cost?", label: "🇺🇸 → 🇲🇳", options: ["Энэ хаана байна?", "Энэ юу вэ?", "Энэ хэд вэ?", "Энэ хэний вэ?"], correct: 2 },
+    { mn: "Би өлссөн", label: "🇲🇳 → 🇺🇸", options: ["I am tired", "I am hungry", "I am happy", "I am cold"], correct: 1 },
+    { mn: "Where is the toilet?", label: "🇺🇸 → 🇲🇳", options: ["Жорлон хаана байна?", "Та хэдтэй вэ?", "Энэ юу вэ?", "Ус авчир"], correct: 0 },
+    { mn: "Баяртай", label: "🇲🇳 → 🇺🇸", options: ["Sorry", "Please", "Good morning", "Goodbye"], correct: 3 },
+  ];
+
+  const phrases = [
+    { en: "Hello!", mn: "Сайн байна уу!", pron: "Sain baina uu?" },
+    { en: "Thank you", mn: "Баярлалаа", pron: "Bayarlalaa" },
+    { en: "Good morning", mn: "Өглөөний мэнд", pron: "Öglöönii mend" },
+    { en: "Good night", mn: "Сайхан амраарай", pron: "Saikhan amraarai" },
+    { en: "Goodbye", mn: "Баяртай", pron: "Bayartai" },
+    { en: "Yes", mn: "Тийм", pron: "Tiim" },
+    { en: "No", mn: "Үгүй", pron: "Ügüi" },
+    { en: "Please", mn: "Гуйя", pron: "Guiya" },
+    { en: "Sorry / Excuse me", mn: "Уучлаарай", pron: "Uuchlaarai" },
+    { en: "I don't understand", mn: "Би ойлгохгүй байна", pron: "Bi oilgokh'güi baina" },
+    { en: "Where is the toilet?", mn: "Жорлон хаана байна?", pron: "Jorlon khaana baina?" },
+    { en: "How much?", mn: "Хэд вэ?", pron: "Khed ve?" },
+    { en: "Beautiful!", mn: "Гоё!", pron: "Goyo!" },
+    { en: "I am hungry", mn: "Би өлссөн", pron: "Bi ölsson" },
+    { en: "Water please", mn: "Ус авчир", pron: "Us avchir" },
+    { en: "Help me!", mn: "Надад тусал!", pron: "Nadad tusal!" },
+    { en: "I love Mongolia", mn: "Би Монголд дуртай", pron: "Bi Mongold durtai" },
+    { en: "What is your name?", mn: "Таны нэр хэн бэ?", pron: "Tany ner khen be?" },
+    { en: "My name is...", mn: "Миний нэр ... мөн", pron: "Minii ner ... mön" },
+    { en: "Nice to meet you", mn: "Таньж баярлалаа", pron: "Tanj bayarlalaa" },
+  ];
+
+  const flashcards = [
+    { mn: "Сайн байна уу?", en: "How are you?", pron: "Sain baina uu?" },
+    { mn: "Баярлалаа", en: "Thank you", pron: "Bayarlalaa" },
+    { mn: "Уучлаарай", en: "Excuse me / Sorry", pron: "Uuchlaarai" },
+    { mn: "Баяртай", en: "Goodbye", pron: "Bayartai" },
+    { mn: "Тийм / Үгүй", en: "Yes / No", pron: "Tiim / Ügüi" },
+    { mn: "Өглөөний мэнд", en: "Good morning", pron: "Öglöönii mend" },
+    { mn: "Гоё!", en: "Beautiful!", pron: "Goyo!" },
+    { mn: "Би өлссөн", en: "I am hungry", pron: "Bi ölsson" },
+    { mn: "Хэд вэ?", en: "How much?", pron: "Khed ve?" },
+    { mn: "Надад тусал!", en: "Help me!", pron: "Nadad tusal!" },
+  ];
+
+  /* ── State ── */
+  let xp = 42;
+  let currentQ = 0, hearts = 3, score = 0, answered = false;
+  let shuffledQ = [];
+  let fcIndex = 0, fcFlipped = false;
+
+  /* ── Tab switching ── */
+  function switchTab(tab) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById(tab + 'Screen').classList.add('active');
+    document.getElementById('nav-' + tab).classList.add('active');
+    if (tab === 'phrases') renderPhrases();
+    if (tab === 'flashcards') renderFlashcard();
+    if (tab === 'quiz') restartQuiz();
+  }
+
+  function goToQuiz() { switchTab('quiz'); }
+
+  /* ── Quiz ── */
+  function restartQuiz() {
+    shuffledQ = [...questions].sort(() => Math.random() - 0.5).slice(0, 7);
+    currentQ = 0; hearts = 3; score = 0; answered = false;
+    document.getElementById('quizResult').style.display = 'none';
+    document.getElementById('quizActive').style.display = 'block';
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    if (currentQ >= shuffledQ.length) { showResult(); return; }
+    const q = shuffledQ[currentQ];
+    answered = false;
+    document.getElementById('qProgress').textContent = `${currentQ + 1} / ${shuffledQ.length}`;
+    document.getElementById('progBar').style.width = `${(currentQ / shuffledQ.length) * 100}%`;
+    document.getElementById('qType').textContent = q.label;
+    document.getElementById('qText').textContent = q.mn;
+    document.getElementById('feedback').className = 'feedback-box';
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('nextBtn').classList.remove('show');
+    document.getElementById('hearts').textContent = '❤️'.repeat(hearts) + '🖤'.repeat(3 - hearts);
+    const opts = document.getElementById('options');
+    opts.innerHTML = q.options.map((o, i) =>
+      `<button class="opt-btn" onclick="checkAnswer(${i})">${o}</button>`
+    ).join('');
+  }
+
+  function checkAnswer(idx) {
+    if (answered) return;
+    answered = true;
+    const q = shuffledQ[currentQ];
+    document.querySelectorAll('.opt-btn').forEach(b => b.classList.add('disabled'));
+    const fb = document.getElementById('feedback');
+    if (idx === q.correct) {
+      document.querySelectorAll('.opt-btn')[idx].classList.add('correct');
+      fb.className = 'feedback-box correct';
+      fb.textContent = '✓ Зөв! Correct! +10 XP';
+      score++;
+      xp = Math.min(100, xp + 10);
+      document.getElementById('xpBar').style.width = xp + '%';
+      document.getElementById('xpLabel').textContent = xp + ' / 100 XP';
+    } else {
+      document.querySelectorAll('.opt-btn')[idx].classList.add('wrong');
+      document.querySelectorAll('.opt-btn')[q.correct].classList.add('correct');
+      fb.className = 'feedback-box wrong';
+      fb.textContent = `✗ Буруу. The answer is: "${q.options[q.correct]}"`;
+      hearts = Math.max(0, hearts - 1);
+      document.getElementById('hearts').textContent = '❤️'.repeat(hearts) + '🖤'.repeat(3 - hearts);
+      if (hearts === 0) { setTimeout(showResult, 1400); return; }
+    }
+    document.getElementById('nextBtn').classList.add('show');
+  }
+
+  function nextQuestion() { currentQ++; renderQuestion(); }
+
+  function showResult() {
+    document.getElementById('quizActive').style.display = 'none';
+    document.getElementById('quizResult').style.display = 'block';
+    const total = shuffledQ.length;
+    const acc = Math.round((score / total) * 100);
+    document.getElementById('rScore').textContent = score;
+    document.getElementById('rXP').textContent = '+' + (score * 10);
+    document.getElementById('rAcc').textContent = acc + '%';
+    if (acc >= 80) {
+      document.getElementById('rEmoji').textContent = '🏆';
+      document.getElementById('rTitle').textContent = 'Маш сайн! Amazing!';
+      document.getElementById('rSub').textContent = 'You are on fire! Keep going!';
+    } else if (acc >= 50) {
+      document.getElementById('rEmoji').textContent = '😊';
+      document.getElementById('rTitle').textContent = 'Сайн байна! Good job!';
+      document.getElementById('rSub').textContent = 'Practice makes perfect!';
+    } else {
+      document.getElementById('rEmoji').textContent = '💪';
+      document.getElementById('rTitle').textContent = 'Дахин оролдоорой!';
+      document.getElementById('rSub').textContent = "Don't give up — try again!";
+    }
+  }
+
+  /* ── Phrases ── */
+  function renderPhrases(filter) {
+    const list = document.getElementById('phraseList');
+    const q = (filter || '').toLowerCase();
+    const filtered = phrases.filter(p =>
+      p.en.toLowerCase().includes(q) || p.mn.includes(q) || p.pron.toLowerCase().includes(q)
+    );
+    list.innerHTML = filtered.map(p => `
+      <div class="phrase-card">
+        <div class="phrase-flags">🇺🇸🇲🇳</div>
+        <div class="phrase-body">
+          <div class="phrase-en">${p.en}</div>
+          <div class="phrase-mn">${p.mn}</div>
+          <div class="phrase-pron">${p.pron}</div>
+        </div>
+        <button class="speak-btn" onclick="speak('${p.en.replace(/'/g, "\\'")}')">
+          <i class="ti ti-volume"></i>
+        </button>
+      </div>`).join('');
+  }
+
+  function filterPhrases() {
+    renderPhrases(document.getElementById('searchInput').value);
+  }
+
+  function speak(text) {
+    if ('speechSynthesis' in window) {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'en-US'; u.rate = 0.85;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(u);
+    }
+  }
+
+  /* ── Flashcards ── */
+  function renderFlashcard() {
+    fcFlipped = false;
+    document.getElementById('flashcard').classList.remove('flipped');
+    const card = flashcards[fcIndex];
+    document.getElementById('fcFront').textContent = card.mn;
+    document.getElementById('fcBack').textContent = card.en;
+    document.getElementById('fcPron').textContent = card.pron;
+    document.getElementById('fcCounter').textContent = `${fcIndex + 1} / ${flashcards.length}`;
+  }
+
+  function flipCard() {
+    fcFlipped = !fcFlipped;
+    document.getElementById('flashcard').classList.toggle('flipped', fcFlipped);
+  }
+
+  function nextCard() {
+    fcIndex = (fcIndex + 1) % flashcards.length;
+    renderFlashcard();
+  }
+
+  function prevCard() {
+    fcIndex = (fcIndex - 1 + flashcards.length) % flashcards.length;
+    renderFlashcard();
+  }
+
+  /* ── Init ── */
+  restartQuiz();
+  renderPhrases();
+  renderFlashcard();
+</script>
+</body>
+</html>
